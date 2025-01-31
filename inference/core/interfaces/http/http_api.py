@@ -1513,6 +1513,11 @@ class HttpInterface(BaseInterface):
                 asyncio.create_task(initialize_models(model_init_state))
                 logger.info("Model initialization started in the background.")
 
+            @app.on_event("shutdown")
+            async def startup_model_init():
+                logger.warning("Shutting down")
+                await usage_collector.async_push_usage_payloads()
+
             @app.get("/readiness", status_code=200)
             async def readiness(
                 state: ModelInitState = Depends(lambda: model_init_state),
